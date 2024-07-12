@@ -1,0 +1,29 @@
+From 53a2482a17bd2dfc574d261bef865f791b777ad9 Mon Sep 17 00:00:00 2001
+From: Ivan Orlov <ivan.orlov0322@gmail.com>
+Date: Fri, 12 Jul 2024 22:50:08 +0100
+Subject: [PATCH 1/2] ALSA: aloop: Allow using global timers
+
+Allow using global timers as a timer source when device is equal to -1
+in the timer_source parameter.
+
+Signed-off-by: Ivan Orlov <ivan.orlov0322@gmail.com>
+---
+ sound/drivers/aloop.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/sound/drivers/aloop.c b/sound/drivers/aloop.c
+index 892c4e29c0a3..c1e613fbc73d 100644
+--- a/sound/drivers/aloop.c
++++ b/sound/drivers/aloop.c
+@@ -1127,6 +1127,8 @@ static int loopback_parse_timer_id(const char *str,
+ 			}
+ 		}
+ 	}
++	if (card_idx == -1)
++		tid->dev_class = SNDRV_TIMER_CLASS_GLOBAL;
+ 	if (!err && tid) {
+ 		tid->card = card_idx;
+ 		tid->device = dev;
+-- 
+2.34.1
+
