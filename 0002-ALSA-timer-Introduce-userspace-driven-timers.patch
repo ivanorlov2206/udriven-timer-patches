@@ -1,4 +1,4 @@
-From 90b8ee369938baee931d7020795f9f2b815917d8 Mon Sep 17 00:00:00 2001
+From 1a740aa7df94b6ed78f51039e57c8ed14cd98c50 Mon Sep 17 00:00:00 2001
 From: Ivan Orlov <ivan.orlov0322@gmail.com>
 Date: Fri, 12 Jul 2024 22:52:42 +0100
 Subject: [PATCH 2/2] ALSA: timer: Introduce userspace-driven timers
@@ -77,7 +77,7 @@ index 628d46a0da92..9830c7859b61 100644
  #if __BITS_PER_LONG == 64
  #define SNDRV_TIMER_IOCTL_TREAD SNDRV_TIMER_IOCTL_TREAD_OLD
 diff --git a/sound/core/timer.c b/sound/core/timer.c
-index 4d2ee99c12a3..0f73fe3adc88 100644
+index 4d2ee99c12a3..2df867dafcb9 100644
 --- a/sound/core/timer.c
 +++ b/sound/core/timer.c
 @@ -13,6 +13,7 @@
@@ -167,7 +167,7 @@ index 4d2ee99c12a3..0f73fe3adc88 100644
 +	utimer = memdup_user(_utimer, sizeof(*utimer));
 +	if (IS_ERR(utimer)) {
 +		pr_err("Can't get utimer struct from userspace\n");
-+		return -1;
++		return -EFAULT;
 +	}
 +
 +	timer = kmalloc(sizeof(*timer), GFP_KERNEL);
