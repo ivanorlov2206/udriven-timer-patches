@@ -6,18 +6,24 @@
 #include <pthread.h>
 #include <sound/asound.h>
 
+#define FRAME_RATE 8000
+#define PERIOD_SIZE 4410
+#define FORMAT_SIZE 2
+#define CHANNELS_COUNT 1
+#define BUF_SIZE (PERIOD_SIZE * FORMAT_SIZE * CHANNELS_COUNT) + 1
+#define TIMER_FREQ_SEC 1
+
 /*
  * Userspace timer definition. We have to provide the desired rate and period size (in frames)
  * to convince snd-aloop that our timer works correctly and has right HW parameters
  */
 static struct snd_userspace_timer timer = {
-	.rate = 8000,
-	.period = 4410,
+	.rate = FRAME_RATE,
+	.period = PERIOD_SIZE,
 	/* id can be set to anything here, it is going to be overwritten by timer creation ioctl */
 	.id = -1,
 };
 static int timer_fd;
-
 static int create_timer(void)
 {
 	int timer_i_fd;
@@ -52,7 +58,6 @@ static void load_snd_aloop(void)
 	system(command);
 }
 
-#define TIMER_FREQ_SEC 1
 static void *ticking_thread(void *data)
 {
 	int i;
@@ -64,7 +69,6 @@ static void *ticking_thread(void *data)
 	}
 }
 
-#define BUF_SIZE 2048
 static char buf[BUF_SIZE];
 static void record_play(void)
 {
