@@ -1,14 +1,14 @@
-From 1a740aa7df94b6ed78f51039e57c8ed14cd98c50 Mon Sep 17 00:00:00 2001
+From df9915514e645010085cd70cb73ff4e3007a952b Mon Sep 17 00:00:00 2001
 From: Ivan Orlov <ivan.orlov0322@gmail.com>
 Date: Fri, 12 Jul 2024 22:52:42 +0100
 Subject: [PATCH 2/2] ALSA: timer: Introduce userspace-driven timers
 
 There are multiple possible timer sources which could be useful for
-the sound time synchronization: hrtimers, hardware clocks (e.g. PTP),
+the sound stream synchronization: hrtimers, hardware clocks (e.g. PTP),
 timer wheels (jiffies). Currently, using one of them to synchronize
 the audio stream of snd-aloop module would require writing a
 kernel-space driver which exports an ALSA timer through the
-snd_timer_register interface.
+snd_timer interface.
 
 However, it is not really convenient for application writers, who may
 want to define their custom timer sources in order to synchronize
@@ -17,21 +17,25 @@ application which receives frames and sends them to snd-aloop pcm
 device, and another application listening on the other end of snd-aloop.
 It makes sense to transfer a new period of data only when certain amount
 of bytes is received through the network, but definitely not when a
-certain amount of jiffies on a system elapses.
+certain amount of jiffies on a local system elapses. Since all of the
+devices are purely virtual it won't introduce any glitches and will
+help the application developers to avoid using sample-rate conversion.
 
 This patch introduces userspace-driven ALSA timers. The timer can be
 created from the userspace using the new ioctl SNDRV_TIMER_IOCTL_CREATE.
 After creating a timer, it becomes available for use system-wide, so
 it can be passed to snd-aloop as a timer source (timer_source parameter
-would be "-1.4.{timer_id}"). I believe introducing new ioctl calls is
-quite inconvenient (as we have a limited amount of them), but other
-possible ways of app <-> kernel communication (like virtual FS) seem
-completely inappropriate for this task (but I'd love to discuss
-alternative solutions).
+would be "-1.4.{timer_id}"). When the userspace app decides to trigger
+a timer, it calls another ioctl SNDRV_TIMER_IOCTL_FIRE on the file
+descriptor of a timer. It initiates a transfer of a new period of data.
 
-So, the ioctl returns a file descriptor of the timer, which can be used
-to fire it when the application wants to. If the application wishes to
-destroy the timer, it can simply close the file descriptor.
+I believe introducing new ioctl calls is quite inconvenient (as we have
+a limited amount of them), but other possible ways of app <-> kernel
+communication (like virtual FS) seem completely inappropriate for this
+task (but I'd love to discuss alternative solutions).
+
+Userspace-driven timers are associated with file descriptors. If the
+application wishes to destroy the timer, it can simply close the file.
 
 To sum up, the userspace-driven ALSA timers allow us to create virtual
 timers which can be used for snd-aloop synchronization.
@@ -39,8 +43,8 @@ timers which can be used for snd-aloop synchronization.
 Signed-off-by: Ivan Orlov <ivan.orlov0322@gmail.com>
 ---
  include/uapi/sound/asound.h |   9 +++
- sound/core/timer.c          | 135 ++++++++++++++++++++++++++++++++++++
- 2 files changed, 144 insertions(+)
+ sound/core/timer.c          | 136 ++++++++++++++++++++++++++++++++++++
+ 2 files changed, 145 insertions(+)
 
 diff --git a/include/uapi/sound/asound.h b/include/uapi/sound/asound.h
 index 628d46a0da92..9830c7859b61 100644
@@ -77,18 +81,19 @@ index 628d46a0da92..9830c7859b61 100644
  #if __BITS_PER_LONG == 64
  #define SNDRV_TIMER_IOCTL_TREAD SNDRV_TIMER_IOCTL_TREAD_OLD
 diff --git a/sound/core/timer.c b/sound/core/timer.c
-index 4d2ee99c12a3..2df867dafcb9 100644
+index 4d2ee99c12a3..03dfa3dbc1e7 100644
 --- a/sound/core/timer.c
 +++ b/sound/core/timer.c
-@@ -13,6 +13,7 @@
+@@ -13,6 +13,8 @@
  #include <linux/module.h>
  #include <linux/string.h>
  #include <linux/sched/signal.h>
 +#include <linux/anon_inodes.h>
++#include <linux/units.h>
  #include <sound/core.h>
  #include <sound/timer.h>
  #include <sound/control.h>
-@@ -2001,6 +2002,138 @@ enum {
+@@ -2001,6 +2003,138 @@ enum {
  	SNDRV_TIMER_IOCTL_PAUSE_OLD = _IO('T', 0x23),
  };
  
@@ -124,36 +129,35 @@ index 4d2ee99c12a3..2df867dafcb9 100644
 +	.unlocked_ioctl = snd_utimer_ioctl,
 +};
 +
-+static int snd_audiosync_start(struct snd_timer *t)
++static int snd_utimer_start(struct snd_timer *t)
 +{
 +	return 0;
 +}
 +
-+static int snd_audiosync_stop(struct snd_timer *t)
++static int snd_utimer_stop(struct snd_timer *t)
 +{
 +	return 0;
 +}
 +
-+static int snd_audiosync_open(struct snd_timer *t)
++static int snd_utimer_open(struct snd_timer *t)
 +{
 +	return 0;
 +}
 +
-+static int snd_audiosync_close(struct snd_timer *t)
++static int snd_utimer_close(struct snd_timer *t)
 +{
 +	return 0;
 +}
 +
 +static const struct snd_timer_hardware timer_hw = {
 +	.flags = SNDRV_TIMER_HW_AUTO | SNDRV_TIMER_HW_WORK,
-+	.open = snd_audiosync_open,
-+	.close = snd_audiosync_close,
-+	.start = snd_audiosync_start,
-+	.stop = snd_audiosync_stop,
++	.open = snd_utimer_open,
++	.close = snd_utimer_close,
++	.start = snd_utimer_start,
++	.stop = snd_utimer_stop,
 +};
 +
 +static unsigned int timer_id;
-+#define NANO_SEC	1000000000UL
 +static int snd_utimer_create(struct file *file, struct snd_userspace_timer __user *_utimer)
 +{
 +	struct snd_userspace_timer *utimer;
@@ -181,6 +185,7 @@ index 4d2ee99c12a3..2df867dafcb9 100644
 +	tid.dev_class = SNDRV_TIMER_CLASS_GLOBAL;
 +	tid.card = -1;
 +	tid.device = SNDRV_TIMER_GLOBAL_UDRIVEN;
++	/* We hold the ioctl lock here so we won't get a race condition */
 +	tid.subdevice = timer_id++;
 +
 +	err = snd_timer_new(NULL, timer_name, &tid, &timer);
@@ -192,7 +197,7 @@ index 4d2ee99c12a3..2df867dafcb9 100644
 +
 +	timer->module = THIS_MODULE;
 +	timer->hw = timer_hw;
-+	timer->hw.resolution = NANO_SEC / utimer->rate * utimer->period;
++	timer->hw.resolution = NANO / utimer->rate * utimer->period;
 +	timer->hw.ticks = 1;
 +	timer->max_instances = 1000;
 +
@@ -227,7 +232,7 @@ index 4d2ee99c12a3..2df867dafcb9 100644
  static long __snd_timer_user_ioctl(struct file *file, unsigned int cmd,
  				 unsigned long arg, bool compat)
  {
-@@ -2045,6 +2178,8 @@ static long __snd_timer_user_ioctl(struct file *file, unsigned int cmd,
+@@ -2045,6 +2179,8 @@ static long __snd_timer_user_ioctl(struct file *file, unsigned int cmd,
  	case SNDRV_TIMER_IOCTL_PAUSE:
  	case SNDRV_TIMER_IOCTL_PAUSE_OLD:
  		return snd_timer_user_pause(file);
