@@ -1,4 +1,4 @@
-From df9915514e645010085cd70cb73ff4e3007a952b Mon Sep 17 00:00:00 2001
+From 7640b43d812bc536081220649ff508c6600bcb43 Mon Sep 17 00:00:00 2001
 From: Ivan Orlov <ivan.orlov0322@gmail.com>
 Date: Fri, 12 Jul 2024 22:52:42 +0100
 Subject: [PATCH 2/2] ALSA: timer: Introduce userspace-driven timers
@@ -26,7 +26,7 @@ created from the userspace using the new ioctl SNDRV_TIMER_IOCTL_CREATE.
 After creating a timer, it becomes available for use system-wide, so
 it can be passed to snd-aloop as a timer source (timer_source parameter
 would be "-1.4.{timer_id}"). When the userspace app decides to trigger
-a timer, it calls another ioctl SNDRV_TIMER_IOCTL_FIRE on the file
+a timer, it calls another ioctl SNDRV_TIMER_IOCTL_TRIGGER on the file
 descriptor of a timer. It initiates a transfer of a new period of data.
 
 I believe introducing new ioctl calls is quite inconvenient (as we have
@@ -47,7 +47,7 @@ Signed-off-by: Ivan Orlov <ivan.orlov0322@gmail.com>
  2 files changed, 145 insertions(+)
 
 diff --git a/include/uapi/sound/asound.h b/include/uapi/sound/asound.h
-index 628d46a0da92..9830c7859b61 100644
+index 628d46a0da92..f511ab4d2ff9 100644
 --- a/include/uapi/sound/asound.h
 +++ b/include/uapi/sound/asound.h
 @@ -893,6 +893,7 @@ enum {
@@ -76,12 +76,12 @@ index 628d46a0da92..9830c7859b61 100644
  #define SNDRV_TIMER_IOCTL_PAUSE		_IO('T', 0xa3)
  #define SNDRV_TIMER_IOCTL_TREAD64	_IOW('T', 0xa4, int)
 +#define SNDRV_TIMER_IOCTL_CREATE	_IOWR('T', 0xa5, struct snd_userspace_timer)
-+#define SNDRV_TIMER_IOCTL_FIRE		_IO('T', 0xa6)
++#define SNDRV_TIMER_IOCTL_TRIGGER	_IO('T', 0xa6)
  
  #if __BITS_PER_LONG == 64
  #define SNDRV_TIMER_IOCTL_TREAD SNDRV_TIMER_IOCTL_TREAD_OLD
 diff --git a/sound/core/timer.c b/sound/core/timer.c
-index 4d2ee99c12a3..03dfa3dbc1e7 100644
+index 4d2ee99c12a3..5b56c774b611 100644
 --- a/sound/core/timer.c
 +++ b/sound/core/timer.c
 @@ -13,6 +13,8 @@
@@ -105,7 +105,7 @@ index 4d2ee99c12a3..03dfa3dbc1e7 100644
 +	return 0;
 +}
 +
-+static int fire_timer(struct file *file)
++static int snd_utimer_trigger(struct file *file)
 +{
 +	struct snd_timer *timer = (struct snd_timer *)file->private_data;
 +
@@ -116,8 +116,8 @@ index 4d2ee99c12a3..03dfa3dbc1e7 100644
 +static long snd_utimer_ioctl(struct file *file, unsigned int ioctl, unsigned long arg)
 +{
 +	switch (ioctl) {
-+	case SNDRV_TIMER_IOCTL_FIRE:
-+		return fire_timer(file);
++	case SNDRV_TIMER_IOCTL_TRIGGER:
++		return snd_utimer_trigger(file);
 +	}
 +
 +	return -EINVAL;
