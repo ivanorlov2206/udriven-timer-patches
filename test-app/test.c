@@ -51,10 +51,11 @@ static void load_snd_aloop(void)
 	char command[64];
 
 	/*
-	 * The timer_source would always start with "-1.4." since we are using global timer with
-	 * device number = 4 and subdevice number = <timer_id>
+	 * The timer_source would always start with "-1" since we are using global timer.
+	 * The device number = 4 (SNDRV_TIMER_GLOBAL_UDRIVEN) and subdevice number = <timer_id>
 	 */
-	sprintf(command, "modprobe snd-aloop timer_source=\"-1.4.%d\"", timer.id);
+	sprintf(command, "modprobe snd-aloop timer_source=\"-1.%d.%d\"",
+		SNDRV_TIMER_GLOBAL_UDRIVEN, timer.id);
 	system(command);
 }
 
@@ -64,7 +65,7 @@ static void *ticking_thread(void *data)
 
 	for (i = 0; i < 10; i++) {
 		/* Well, fire the timer! */
-		ioctl(timer_fd, SNDRV_TIMER_IOCTL_FIRE, NULL);
+		ioctl(timer_fd, SNDRV_TIMER_IOCTL_TRIGGER, NULL);
 		sleep(TIMER_FREQ_SEC);
 	}
 }
