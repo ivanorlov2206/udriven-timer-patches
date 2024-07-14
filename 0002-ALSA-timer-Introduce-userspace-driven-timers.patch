@@ -1,4 +1,4 @@
-From 7640b43d812bc536081220649ff508c6600bcb43 Mon Sep 17 00:00:00 2001
+From 0273ea8dd0df0b07c3a4f3d948d895fa107763d1 Mon Sep 17 00:00:00 2001
 From: Ivan Orlov <ivan.orlov0322@gmail.com>
 Date: Fri, 12 Jul 2024 22:52:42 +0100
 Subject: [PATCH 2/2] ALSA: timer: Introduce userspace-driven timers
@@ -42,9 +42,9 @@ timers which can be used for snd-aloop synchronization.
 
 Signed-off-by: Ivan Orlov <ivan.orlov0322@gmail.com>
 ---
- include/uapi/sound/asound.h |   9 +++
- sound/core/timer.c          | 136 ++++++++++++++++++++++++++++++++++++
- 2 files changed, 145 insertions(+)
+ include/uapi/sound/asound.h |   9 ++
+ sound/core/timer.c          | 172 ++++++++++++++++++++++++++++++++++++
+ 2 files changed, 181 insertions(+)
 
 diff --git a/include/uapi/sound/asound.h b/include/uapi/sound/asound.h
 index 628d46a0da92..f511ab4d2ff9 100644
@@ -81,7 +81,7 @@ index 628d46a0da92..f511ab4d2ff9 100644
  #if __BITS_PER_LONG == 64
  #define SNDRV_TIMER_IOCTL_TREAD SNDRV_TIMER_IOCTL_TREAD_OLD
 diff --git a/sound/core/timer.c b/sound/core/timer.c
-index 4d2ee99c12a3..5b56c774b611 100644
+index 4d2ee99c12a3..25a28a0ce9cd 100644
 --- a/sound/core/timer.c
 +++ b/sound/core/timer.c
 @@ -13,6 +13,8 @@
@@ -93,14 +93,52 @@ index 4d2ee99c12a3..5b56c774b611 100644
  #include <sound/core.h>
  #include <sound/timer.h>
  #include <sound/control.h>
-@@ -2001,6 +2003,138 @@ enum {
+@@ -31,6 +33,8 @@
+ #define DEFAULT_TIMER_LIMIT 1
+ #endif
+ 
++#define MAX_UDRIVEN_TIMERS 128
++
+ static int timer_limit = DEFAULT_TIMER_LIMIT;
+ static int timer_tstamp_monotonic = 1;
+ MODULE_AUTHOR("Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.de>");
+@@ -2001,6 +2005,172 @@ enum {
  	SNDRV_TIMER_IOCTL_PAUSE_OLD = _IO('T', 0x23),
  };
  
++/*
++ * Since userspace-driven timers are passed to userspace, we need to have an identifier
++ * which will allow us to use it (basically, the subdevice number of udriven timer).
++ */
++static bool snd_utimer_ids[MAX_UDRIVEN_TIMERS];
++
++static void snd_utimer_free_id(struct snd_timer *timer)
++{
++	int timer_id = timer->tmr_subdevice;
++
++	snd_BUG_ON(timer_id < 0 || timer_id >= MAX_UDRIVEN_TIMERS);
++	snd_utimer_ids[timer_id] = false;
++}
++
++static int snd_utimer_take_id(void)
++{
++	size_t i;
++
++	for (i = 0; i < MAX_UDRIVEN_TIMERS; i++) {
++		if (!snd_utimer_ids[i]) {
++			snd_utimer_ids[i] = true;
++			return i;
++		}
++	}
++
++	return -1;
++}
++
 +static int snd_utimer_release(struct inode *inode, struct file *file)
 +{
 +	struct snd_timer *timer = (struct snd_timer *)file->private_data;
 +
++	snd_utimer_free_id(timer);
 +	snd_timer_free(timer);
 +	return 0;
 +}
@@ -157,14 +195,19 @@ index 4d2ee99c12a3..5b56c774b611 100644
 +	.stop = snd_utimer_stop,
 +};
 +
-+static unsigned int timer_id;
 +static int snd_utimer_create(struct file *file, struct snd_userspace_timer __user *_utimer)
 +{
 +	struct snd_userspace_timer *utimer;
 +	struct snd_timer *timer;
 +	struct snd_timer_id tid;
-+	int err;
++	int err, timer_id;
 +	char timer_name[20];
++
++	timer_id = snd_utimer_take_id();
++	if (timer_id == -1) {
++		pr_err("Can't create a userspace-driven timer: limit exceeded\n");
++		return -EFAULT;
++	}
 +
 +	sprintf(timer_name, "timer%d", timer_id);
 +
@@ -186,7 +229,7 @@ index 4d2ee99c12a3..5b56c774b611 100644
 +	tid.card = -1;
 +	tid.device = SNDRV_TIMER_GLOBAL_UDRIVEN;
 +	/* We hold the ioctl lock here so we won't get a race condition */
-+	tid.subdevice = timer_id++;
++	tid.subdevice = timer_id;
 +
 +	err = snd_timer_new(NULL, timer_name, &tid, &timer);
 +	if (err < 0) {
@@ -232,7 +275,7 @@ index 4d2ee99c12a3..5b56c774b611 100644
  static long __snd_timer_user_ioctl(struct file *file, unsigned int cmd,
  				 unsigned long arg, bool compat)
  {
-@@ -2045,6 +2179,8 @@ static long __snd_timer_user_ioctl(struct file *file, unsigned int cmd,
+@@ -2045,6 +2215,8 @@ static long __snd_timer_user_ioctl(struct file *file, unsigned int cmd,
  	case SNDRV_TIMER_IOCTL_PAUSE:
  	case SNDRV_TIMER_IOCTL_PAUSE_OLD:
  		return snd_timer_user_pause(file);
