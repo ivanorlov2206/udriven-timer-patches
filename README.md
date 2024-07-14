@@ -1,42 +1,46 @@
 # Userspace-driven ALSA timers
 
 There are multiple possible timer sources which could be useful for
-the sound time synchronization: hrtimers, hardware clocks (e.g. PTP),
+the sound stream synchronization: `hrtimers`, hardware clocks (e.g. PTP),
 timer wheels (`jiffies`). Currently, using one of them to synchronize
-the audio stream of snd-aloop module would require writing a
+the audio stream of `snd-aloop` module would require writing a
 kernel-space driver which exports an ALSA timer through the
-`snd_timer_register` interface.
+`snd_timer` interface.
 
 However, it is not really convenient for application writers, who may
 want to define their custom timer sources in order to synchronize
-substreams of snd-aloop. For instance, we could have a network
-application which receives frames and sends them to snd-aloop pcm
-device, and another application listening on the other end of snd-aloop.
+substreams of `snd-aloop`. For instance, we could have a network
+application which receives frames and sends them to `snd-aloop` pcm
+device, and another application listening on the other end of `snd-aloop`.
 It makes sense to transfer a new period of data only when certain amount
 of bytes is received through the network, but definitely not when a
-certain amount of jiffies on a system elapses.
+certain amount of jiffies on a local system elapses. Since all of the
+devices are purely virtual it won't introduce any glitches and will
+help the application developers to avoid using sample-rate conversion.
 
 This patch introduces userspace-driven ALSA timers. The timer can be
 created from the userspace using the new ioctl `SNDRV_TIMER_IOCTL_CREATE`.
 After creating a timer, it becomes available for use system-wide, so
 it can be passed to snd-aloop as a timer source (timer_source parameter
-would be `-1.4.{timer_id}`). I believe introducing new ioctl calls is
-quite inconvenient (as we have a limited amount of them), but other
-possible ways of app <-> kernel communication (like virtual FS) seem
-completely inappropriate for this task (but I'd love to discuss
-alternative solutions).
+would be `-1.4.{timer_id}`). When the userspace app decides to trigger
+a timer, it calls another ioctl `SNDRV_TIMER_IOCTL_TRIGGER` on the file
+descriptor of a timer. It initiates a transfer of a new period of data.
 
-So, the `ioctl` returns a file descriptor of the timer, which can be used
-to fire it when the application wants to. If the application wishes to
-destroy the timer, it can simply close the file descriptor.
+I believe introducing new ioctl calls is quite inconvenient (as we have
+a limited amount of them), but other possible ways of app <-> kernel
+communication (like virtual FS) seem completely inappropriate for this
+task (but I'd love to discuss alternative solutions).
 
-To sum up, the userspace-driven ALSA timers allows us to create virtual
-timers which can be used for snd-aloop synchronization.
+Userspace-driven timers are associated with file descriptors. If the
+application wishes to destroy the timer, it can simply close the file.
+
+To sum up, the userspace-driven ALSA timers allow us to create virtual
+timers which can be used for `snd-aloop` synchronization.
 
 ## Patch list
 
 * `0001-ALSA-aloop-Allow-using-global-timers.patch` - enables usage of global timers for the snd-aloop module.
-To use a global timer, simply pass `-1` as a device id when setting timer_source.
+To use a global timer, simply pass `-1` as a device id when setting `timer_source` module parameter.
 * `0002-ALSA-timer-Introduce-userspace-driven-timers.patch` - introduces the support for userspace-driven ALSA
 timers.
 
