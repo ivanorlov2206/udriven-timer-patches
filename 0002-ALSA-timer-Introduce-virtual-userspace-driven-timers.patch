@@ -1,4 +1,4 @@
-From 0cd4570ab80c22ac14ea5e25560dfdf429f4f4ab Mon Sep 17 00:00:00 2001
+From d613c59a5cbe807606fef1e3f786a7e76570c8b5 Mon Sep 17 00:00:00 2001
 From: Ivan Orlov <ivan.orlov0322@gmail.com>
 Date: Fri, 12 Jul 2024 22:52:42 +0100
 Subject: [PATCH 2/2] ALSA: timer: Introduce virtual userspace-driven timers
@@ -45,8 +45,8 @@ Signed-off-by: Ivan Orlov <ivan.orlov0322@gmail.com>
 ---
  include/uapi/sound/asound.h |  17 +++
  sound/core/Kconfig          |  11 ++
- sound/core/timer.c          | 226 ++++++++++++++++++++++++++++++++++++
- 3 files changed, 254 insertions(+)
+ sound/core/timer.c          | 225 ++++++++++++++++++++++++++++++++++++
+ 3 files changed, 253 insertions(+)
 
 diff --git a/include/uapi/sound/asound.h b/include/uapi/sound/asound.h
 index 628d46a0da92..424572eb3bfe 100644
@@ -113,7 +113,7 @@ index 8077f481d84f..da240f9ad9e3 100644
  	bool
  
 diff --git a/sound/core/timer.c b/sound/core/timer.c
-index 4d2ee99c12a3..10301920f787 100644
+index 4d2ee99c12a3..db94b5c0a666 100644
 --- a/sound/core/timer.c
 +++ b/sound/core/timer.c
 @@ -13,6 +13,8 @@
@@ -125,20 +125,12 @@ index 4d2ee99c12a3..10301920f787 100644
  #include <sound/core.h>
  #include <sound/timer.h>
  #include <sound/control.h>
-@@ -31,6 +33,8 @@
- #define DEFAULT_TIMER_LIMIT 1
- #endif
- 
-+#define MAX_UDRIVEN_TIMERS 128
-+
- static int timer_limit = DEFAULT_TIMER_LIMIT;
- static int timer_tstamp_monotonic = 1;
- MODULE_AUTHOR("Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.de>");
-@@ -109,6 +113,16 @@ struct snd_timer_status64 {
+@@ -109,6 +111,17 @@ struct snd_timer_status64 {
  	unsigned char reserved[64];	/* reserved */
  };
  
 +#ifdef CONFIG_SND_UTIMER
++#define MAX_UDRIVEN_TIMERS 128
 +#define SNDRV_UTIMER_NAME_LEN 20
 +/* Internal data structure for keeping the state of the userspace-driven timer */
 +struct snd_utimer {
@@ -151,7 +143,7 @@ index 4d2ee99c12a3..10301920f787 100644
  #define SNDRV_TIMER_IOCTL_STATUS64	_IOR('T', 0x14, struct snd_timer_status64)
  
  /* list of timers */
-@@ -2001,6 +2015,216 @@ enum {
+@@ -2001,6 +2014,216 @@ enum {
  	SNDRV_TIMER_IOCTL_PAUSE_OLD = _IO('T', 0x23),
  };
  
@@ -368,7 +360,7 @@ index 4d2ee99c12a3..10301920f787 100644
  static long __snd_timer_user_ioctl(struct file *file, unsigned int cmd,
  				 unsigned long arg, bool compat)
  {
-@@ -2045,6 +2269,8 @@ static long __snd_timer_user_ioctl(struct file *file, unsigned int cmd,
+@@ -2045,6 +2268,8 @@ static long __snd_timer_user_ioctl(struct file *file, unsigned int cmd,
  	case SNDRV_TIMER_IOCTL_PAUSE:
  	case SNDRV_TIMER_IOCTL_PAUSE_OLD:
  		return snd_timer_user_pause(file);
