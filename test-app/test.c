@@ -17,9 +17,9 @@
  * Userspace timer definition. We have to provide the desired rate and period size (in frames)
  * to convince snd-aloop that our timer works correctly and has right HW parameters
  */
-static struct snd_userspace_timer timer = {
-	.rate = FRAME_RATE,
-	.period = PERIOD_SIZE,
+static struct snd_utimer_info timer = {
+	.frame_rate = FRAME_RATE,
+	.period_size = PERIOD_SIZE,
 	/* id can be set to anything here, it is going to be overwritten by timer creation ioctl */
 	.id = -1,
 };
