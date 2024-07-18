@@ -1,4 +1,4 @@
-From d613c59a5cbe807606fef1e3f786a7e76570c8b5 Mon Sep 17 00:00:00 2001
+From 76249e19657edef8d36fee7dfda827fb1ad8c59d Mon Sep 17 00:00:00 2001
 From: Ivan Orlov <ivan.orlov0322@gmail.com>
 Date: Fri, 12 Jul 2024 22:52:42 +0100
 Subject: [PATCH 2/2] ALSA: timer: Introduce virtual userspace-driven timers
@@ -113,7 +113,7 @@ index 8077f481d84f..da240f9ad9e3 100644
  	bool
  
 diff --git a/sound/core/timer.c b/sound/core/timer.c
-index 4d2ee99c12a3..db94b5c0a666 100644
+index 4d2ee99c12a3..10deabbb0c2f 100644
 --- a/sound/core/timer.c
 +++ b/sound/core/timer.c
 @@ -13,6 +13,8 @@
@@ -290,7 +290,7 @@ index 4d2ee99c12a3..db94b5c0a666 100644
 +	timer->hw = timer_hw;
 +	timer->hw.resolution = NANO / utimer_info->frame_rate * utimer_info->period_size;
 +	timer->hw.ticks = 1;
-+	timer->max_instances = 1000;
++	timer->max_instances = MAX_SLAVE_INSTANCES;
 +
 +	utimer->timer = timer;
 +
