@@ -1,4 +1,4 @@
 all:
-	gcc -I/home/ivan/linux_work/custom_hdrs/include/ test.c -o test
+	gcc -I${INSTALL_HDR_PATH}/include/ test.c -o test
 clean:
 	rm -rf test

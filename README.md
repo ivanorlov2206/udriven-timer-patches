@@ -53,6 +53,11 @@ $ git am < 0001-ALSA-aloop-Allow-using-global-timers.patch
 $ git am < 0002-ALSA-timer-Introduce-userspace-driven-timers.patch
 ```
 
+Set the `INSTALL_HDR_PATH` environment variable to point to the directory you'd like to install the headers to:
+```bash
+$ export INSTALL_HDR_PATH=...
+```
+
 After that, build your kernel and install the kernel headers with `make headers_install` (it is highly recommended
 to do it on VM or using [virtme-ng](https://github.com/arighi/virtme-ng))
 
