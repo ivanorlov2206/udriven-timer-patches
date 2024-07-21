@@ -103,6 +103,7 @@ int main(void)
 
 	record_play();
 
+	unload();
 	close(timer_fd);
 	return EXIT_SUCCESS;
 }
