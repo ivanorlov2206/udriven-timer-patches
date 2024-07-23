@@ -43,6 +43,8 @@ timers which can be used for `snd-aloop` synchronization.
 To use a global timer, simply pass `-1` as a device id when setting `timer_source` module parameter.
 * `0002-ALSA-timer-Introduce-userspace-driven-timers.patch` - introduces the support for userspace-driven ALSA
 timers.
+* `0003-selftests-ALSA-Cover-userspace-driven-timers-with-te.patch` - covers the new functionality with the
+integration test (kernel selftest)
 
 ## Test application
 
