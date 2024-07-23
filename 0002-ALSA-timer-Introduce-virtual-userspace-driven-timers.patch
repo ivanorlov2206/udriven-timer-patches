@@ -1,7 +1,7 @@
 From 00600e670095303fca7eeda33e69be76c909bc5c Mon Sep 17 00:00:00 2001
 From: Ivan Orlov <ivan.orlov0322@gmail.com>
 Date: Fri, 12 Jul 2024 22:52:42 +0100
-Subject: [PATCH 2/2] ALSA: timer: Introduce virtual userspace-driven timers
+Subject: [PATCH 2/3] ALSA: timer: Introduce virtual userspace-driven timers
 
 There are multiple possible timer sources which could be useful for
 the sound stream synchronization: hrtimers, hardware clocks (e.g. PTP),
