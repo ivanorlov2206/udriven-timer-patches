@@ -41,9 +41,10 @@ timers which can be used for `snd-aloop` synchronization.
 
 * `0001-ALSA-aloop-Allow-using-global-timers.patch` - enables usage of global timers for the snd-aloop module.
 To use a global timer, simply pass `-1` as a device id when setting `timer_source` module parameter.
-* `0002-ALSA-timer-Introduce-userspace-driven-timers.patch` - introduces the support for userspace-driven ALSA
+* `0002-Docs-sound-Add-documentation-for-userspace-driven-AL.patch` - adds documentation for the new functionality
+* `0003-ALSA-timer-Introduce-userspace-driven-timers.patch` - introduces the support for userspace-driven ALSA
 timers.
-* `0003-selftests-ALSA-Cover-userspace-driven-timers-with-te.patch` - covers the new functionality with the
+* `0004-selftests-ALSA-Cover-userspace-driven-timers-with-te.patch` - covers the new functionality with the
 integration test (kernel selftest)
 
 ## Test application
@@ -52,7 +53,9 @@ First of all, make sure that both patches are applied to your kernel. To do that
 tree and run the following commands:
 ```
 $ git am < 0001-ALSA-aloop-Allow-using-global-timers.patch
-$ git am < 0002-ALSA-timer-Introduce-userspace-driven-timers.patch
+$ git am < 0002-Docs-sound-Add-documentation-for-userspace-driven-AL.patch
+$ git am < 0003-ALSA-timer-Introduce-userspace-driven-timers.patch
+$ git am < 0004-selftests-ALSA-Cover-userspace-driven-timers-with-te.patch
 ```
 
 Set the `INSTALL_HDR_PATH` environment variable to point to the directory you'd like to install the headers to:

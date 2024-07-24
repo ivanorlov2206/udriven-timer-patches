@@ -1,7 +1,7 @@
-From 8b41c8fc2454f18c68ddfaac65b2cc604fad1cb4 Mon Sep 17 00:00:00 2001
+From 92da7aa6a72ad7d2318f6b3cf650e52d1d10ac9b Mon Sep 17 00:00:00 2001
 From: Ivan Orlov <ivan.orlov0322@gmail.com>
 Date: Tue, 23 Jul 2024 11:23:12 +0100
-Subject: [PATCH 3/3] selftests: ALSA: Cover userspace-driven timers with test
+Subject: [PATCH 4/4] selftests: ALSA: Cover userspace-driven timers with test
 
 Add a test for the new functionality of userspace-driven timers and the
 tool which allows us to count timer ticks in a certain time period. The

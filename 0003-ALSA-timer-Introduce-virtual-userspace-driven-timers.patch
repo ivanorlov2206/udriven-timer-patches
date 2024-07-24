@@ -1,7 +1,7 @@
-From 00600e670095303fca7eeda33e69be76c909bc5c Mon Sep 17 00:00:00 2001
+From 31e1ce06641343989a2eeca3edd7e571adb1cfdb Mon Sep 17 00:00:00 2001
 From: Ivan Orlov <ivan.orlov0322@gmail.com>
 Date: Fri, 12 Jul 2024 22:52:42 +0100
-Subject: [PATCH 2/3] ALSA: timer: Introduce virtual userspace-driven timers
+Subject: [PATCH 3/4] ALSA: timer: Introduce virtual userspace-driven timers
 
 There are multiple possible timer sources which could be useful for
 the sound stream synchronization: hrtimers, hardware clocks (e.g. PTP),
@@ -45,8 +45,8 @@ Signed-off-by: Ivan Orlov <ivan.orlov0322@gmail.com>
 ---
  include/uapi/sound/asound.h |  17 +++
  sound/core/Kconfig          |  11 ++
- sound/core/timer.c          | 228 ++++++++++++++++++++++++++++++++++++
- 3 files changed, 256 insertions(+)
+ sound/core/timer.c          | 229 ++++++++++++++++++++++++++++++++++++
+ 3 files changed, 257 insertions(+)
 
 diff --git a/include/uapi/sound/asound.h b/include/uapi/sound/asound.h
 index 8bf7e8a0eb6f..ade952a54edd 100644
@@ -113,7 +113,7 @@ index b970a1734647..3cf82641fc67 100644
  	bool
  
 diff --git a/sound/core/timer.c b/sound/core/timer.c
-index d104adc75a8b..5669bc6b54aa 100644
+index d104adc75a8b..92237f82c906 100644
 --- a/sound/core/timer.c
 +++ b/sound/core/timer.c
 @@ -13,6 +13,8 @@
@@ -143,7 +143,7 @@ index d104adc75a8b..5669bc6b54aa 100644
  #define SNDRV_TIMER_IOCTL_STATUS64	_IOR('T', 0x14, struct snd_timer_status64)
  
  /* list of timers */
-@@ -2009,6 +2022,219 @@ enum {
+@@ -2009,6 +2022,220 @@ enum {
  	SNDRV_TIMER_IOCTL_PAUSE_OLD = _IO('T', 0x23),
  };
  
@@ -350,6 +350,7 @@ index d104adc75a8b..5669bc6b54aa 100644
 +
 +	return anon_inode_getfd(utimer->name, &snd_utimer_fops, utimer, O_RDWR | O_CLOEXEC);
 +}
++
 +#else
 +
 +static int snd_utimer_ioctl_create(struct file *file,
@@ -363,7 +364,7 @@ index d104adc75a8b..5669bc6b54aa 100644
  static long __snd_timer_user_ioctl(struct file *file, unsigned int cmd,
  				 unsigned long arg, bool compat)
  {
-@@ -2053,6 +2279,8 @@ static long __snd_timer_user_ioctl(struct file *file, unsigned int cmd,
+@@ -2053,6 +2280,8 @@ static long __snd_timer_user_ioctl(struct file *file, unsigned int cmd,
  	case SNDRV_TIMER_IOCTL_PAUSE:
  	case SNDRV_TIMER_IOCTL_PAUSE_OLD:
  		return snd_timer_user_pause(file);
