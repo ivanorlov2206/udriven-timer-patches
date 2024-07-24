@@ -1,4 +1,4 @@
-From 92da7aa6a72ad7d2318f6b3cf650e52d1d10ac9b Mon Sep 17 00:00:00 2001
+From 8fbae5f396c1343a16e5b00dfc30a0128a3caab0 Mon Sep 17 00:00:00 2001
 From: Ivan Orlov <ivan.orlov0322@gmail.com>
 Date: Tue, 23 Jul 2024 11:23:12 +0100
 Subject: [PATCH 4/4] selftests: ALSA: Cover userspace-driven timers with test

@@ -1,45 +1,30 @@
-From 31e1ce06641343989a2eeca3edd7e571adb1cfdb Mon Sep 17 00:00:00 2001
+From 23dbb492e80faf85fd21ea899ff8dd7400cf706f Mon Sep 17 00:00:00 2001
 From: Ivan Orlov <ivan.orlov0322@gmail.com>
 Date: Fri, 12 Jul 2024 22:52:42 +0100
 Subject: [PATCH 3/4] ALSA: timer: Introduce virtual userspace-driven timers
 
-There are multiple possible timer sources which could be useful for
-the sound stream synchronization: hrtimers, hardware clocks (e.g. PTP),
-timer wheels (jiffies). Currently, using one of them to synchronize
-the audio stream of snd-aloop module would require writing a
-kernel-space driver which exports an ALSA timer through the
-snd_timer interface.
+Implement two ioctl calls in order to support virtual userspace-driven
+ALSA timers.
 
-However, it is not really convenient for application writers, who may
-want to define their custom timer sources in order to (for instance)
-synchronize substreams of snd-aloop.
+The first ioctl is SNDRV_TIMER_IOCTL_CREATE, which gets the
+snd_utimer_info struct as a parameter and returns a file descriptor of
+a virtual timer. It also updates the `id` field of the snd_utimer_info
+struct, which provides a unique identifier for the timer (basically,
+the subdevice number which can be used when creating timer instances).
 
-For instance, we could have a network application which receives frames
-and sends them to snd-aloop pcm device, and another application
-listening on the other end of snd-aloop. It makes sense to transfer a
-new period of data only when certain amount of bytes is received through
-the network, but definitely not when a certain amount of jiffies on a
-local system elapses. Since all of the devices are purely virtual it
-won't introduce any glitches and will help the application developers to
-avoid using sample-rate conversion.
+This patch also introduces a tiny id allocator for the userspace-driven
+timers, which guarantees that we don't have more than 128 of them in the
+system.
 
-This patch introduces userspace-driven ALSA timers. The timer can be
-created from the userspace using the new ioctl SNDRV_TIMER_IOCTL_CREATE.
-After creating a timer, it becomes available for use system-wide, so
-it can be passed to snd-aloop as a timer source (timer_source parameter
-would be "-1.SNDRV_TIMER_GLOBAL_UDRIVEN.{timer_id}"). When the userspace
-app decides to trigger a timer, it calls another ioctl
-SNDRV_TIMER_IOCTL_TRIGGER on the file descriptor of a timer. It
-initiates a transfer of a new period of data.
+Another ioctl is SNDRV_TIMER_IOCTL_TRIGGER, which allows us to trigger
+the virtual timer (and calls snd_timer_interrupt for the timer under
+the hood), causing all of the timer instances binded to this timer to
+execute their callbacks.
 
-Userspace-driven timers are associated with file descriptors. If the
-application wishes to destroy the timer, it can simply release the file
-descriptor of a virtual timer.
-
-I believe introducing new ioctl calls is quite inconvenient (as we have
-a limited amount of them), but other possible ways of app <-> kernel
-communication (like virtual FS) seem completely inappropriate for this
-task (but I'd love to discuss alternative solutions).
+The maximum amount of ticks available for the timer is 1 for the sake of
+simplification of the userspace API. 'start', 'stop', 'open' and 'close'
+callbacks for the userspace-driven timers are empty since we don't
+really do any hardware initialization here.
 
 Signed-off-by: Ivan Orlov <ivan.orlov0322@gmail.com>
 ---

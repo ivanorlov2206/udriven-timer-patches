@@ -1,0 +1,66 @@
+From 8fbae5f396c1343a16e5b00dfc30a0128a3caab0 Mon Sep 17 00:00:00 2001
+From: Ivan Orlov <ivan.orlov0322@gmail.com>
+Date: Wed, 24 Jul 2024 23:30:52 +0100
+Subject: [PATCH 0/4] Introduce userspace-driven ALSA timers
+
+There are multiple possible timer sources which could be useful for
+the sound stream synchronization: hrtimers, hardware clocks (e.g. PTP),
+timer wheels (jiffies). Currently, using one of them to synchronize
+the audio stream of snd-aloop module would require writing a
+kernel-space driver which exports an ALSA timer through the
+snd_timer interface.
+
+However, it is not really convenient for application developers, who may
+want to define their custom timer sources in order to synchronize
+substreams of snd-aloop.
+
+For instance, we could have a network application which receives frames
+and sends them to snd-aloop pcm device, and another application
+listening on the other end of snd-aloop. It makes sense to transfer a
+new period of data only when certain amount of frames is received
+through the network, but definitely not when a certain amount of jiffies
+on a local system elapses. Since all of the devices are purely virtual
+it won't introduce any glitches and will help the application developers
+to avoid using sample-rate conversion.
+
+This patch series introduces userspace-driven ALSA timers. The timer can
+be created from the userspace using the new ioctl SNDRV_TIMER_IOCTL_CREATE.
+After creating a timer, it becomes available for use system-wide, so it
+can be passed to snd-aloop as a timer source (timer_source parameter
+would be "-1.SNDRV_TIMER_GLOBAL_UDRIVEN.{timer_id}"). When the userspace
+app decides to trigger a timer, it calls another ioctl
+SNDRV_TIMER_IOCTL_TRIGGER on the file descriptor of a timer. It
+initiates a transfer of a new period of data.
+
+Userspace-driven timers are associated with file descriptors. If the
+application wishes to destroy the timer, it can simply release the file
+descriptor of a virtual timer.
+
+I believe introducing new ioctl calls is quite inconvenient (as we have
+a limited amount of them), but other possible ways of app <-> kernel
+communication (like virtual FS) seem completely inappropriate for this
+task (but I'd love to discuss alternative solutions).
+
+Ivan Orlov (4):
+  ALSA: aloop: Allow using global timers
+  Docs/sound: Add documentation for userspace-driven ALSA timers
+  ALSA: timer: Introduce virtual userspace-driven timers
+  selftests: ALSA: Cover userspace-driven timers with test
+
+ Documentation/sound/index.rst               |   1 +
+ Documentation/sound/utimers.rst             | 118 ++++++++++
+ include/uapi/sound/asound.h                 |  17 ++
+ sound/core/Kconfig                          |  11 +
+ sound/core/timer.c                          | 229 ++++++++++++++++++++
+ sound/drivers/aloop.c                       |   2 +
+ tools/testing/selftests/alsa/Makefile       |   2 +-
+ tools/testing/selftests/alsa/global-timer.c |  87 ++++++++
+ tools/testing/selftests/alsa/utimer-test.c  | 130 +++++++++++
+ 9 files changed, 596 insertions(+), 1 deletion(-)
+ create mode 100644 Documentation/sound/utimers.rst
+ create mode 100644 tools/testing/selftests/alsa/global-timer.c
+ create mode 100644 tools/testing/selftests/alsa/utimer-test.c
+
+-- 
+2.34.1
+
