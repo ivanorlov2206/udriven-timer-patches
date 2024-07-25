@@ -1,4 +1,4 @@
-From 23dbb492e80faf85fd21ea899ff8dd7400cf706f Mon Sep 17 00:00:00 2001
+From d52a331ea9504e9a4b2271923eb2f1a285fa7308 Mon Sep 17 00:00:00 2001
 From: Ivan Orlov <ivan.orlov0322@gmail.com>
 Date: Fri, 12 Jul 2024 22:52:42 +0100
 Subject: [PATCH 3/4] ALSA: timer: Introduce virtual userspace-driven timers
@@ -98,7 +98,7 @@ index b970a1734647..3cf82641fc67 100644
  	bool
  
 diff --git a/sound/core/timer.c b/sound/core/timer.c
-index d104adc75a8b..92237f82c906 100644
+index d104adc75a8b..5e80951bf4eb 100644
 --- a/sound/core/timer.c
 +++ b/sound/core/timer.c
 @@ -13,6 +13,8 @@
@@ -284,7 +284,7 @@ index d104adc75a8b..92237f82c906 100644
 +
 +	err = snd_timer_global_register(timer);
 +	if (err < 0) {
-+		pr_err("Can't register new timer\n");
++		pr_err("Can't register a userspace timer\n");
 +		goto err_timer_reg;
 +	}
 +

@@ -1,4 +1,4 @@
-From 5b671b43693da489a3519466cd8d15f0ba32008f Mon Sep 17 00:00:00 2001
+From e7892ae0af6762802052f5847bd0a827df1f0ed0 Mon Sep 17 00:00:00 2001
 From: Ivan Orlov <ivan.orlov0322@gmail.com>
 Date: Tue, 23 Jul 2024 11:23:12 +0100
 Subject: [PATCH 4/4] selftests: ALSA: Cover userspace-driven timers with test
@@ -140,7 +140,7 @@ index 000000000000..c15ec0ba851a
 +}
 diff --git a/tools/testing/selftests/alsa/utimer-test.c b/tools/testing/selftests/alsa/utimer-test.c
 new file mode 100644
-index 000000000000..a3345d36f184
+index 000000000000..b45a9d29f4c4
 --- /dev/null
 +++ b/tools/testing/selftests/alsa/utimer-test.c
 @@ -0,0 +1,130 @@
@@ -189,7 +189,7 @@ index 000000000000..a3345d36f184
 +	self->utimer_info->frame_rate = FRAME_RATE;
 +	self->utimer_info->period_size = PERIOD_SIZE;
 +
-+	timer_dev_fd = open("/dev/snd/timer", O_RDWR | O_CLOEXEC);
++	timer_dev_fd = open("/dev/snd/timer", O_RDONLY);
 +	ASSERT_GE(timer_dev_fd, 0);
 +
 +	self->utimer_fd = ioctl(timer_dev_fd, SNDRV_TIMER_IOCTL_CREATE, self->utimer_info);
