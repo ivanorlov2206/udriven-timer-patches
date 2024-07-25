@@ -1,4 +1,4 @@
-From e7892ae0af6762802052f5847bd0a827df1f0ed0 Mon Sep 17 00:00:00 2001
+From ab6d79f866b91e61ac0c4042abb43db1a57d3f4e Mon Sep 17 00:00:00 2001
 From: Ivan Orlov <ivan.orlov0322@gmail.com>
 Date: Tue, 23 Jul 2024 11:23:12 +0100
 Subject: [PATCH 4/4] selftests: ALSA: Cover userspace-driven timers with test
@@ -27,8 +27,8 @@ Signed-off-by: Ivan Orlov <ivan.orlov0322@gmail.com>
 ---
  tools/testing/selftests/alsa/Makefile       |   2 +-
  tools/testing/selftests/alsa/global-timer.c |  87 +++++++++++++
- tools/testing/selftests/alsa/utimer-test.c  | 130 ++++++++++++++++++++
- 3 files changed, 218 insertions(+), 1 deletion(-)
+ tools/testing/selftests/alsa/utimer-test.c  | 133 ++++++++++++++++++++
+ 3 files changed, 221 insertions(+), 1 deletion(-)
  create mode 100644 tools/testing/selftests/alsa/global-timer.c
  create mode 100644 tools/testing/selftests/alsa/utimer-test.c
 
@@ -140,10 +140,10 @@ index 000000000000..c15ec0ba851a
 +}
 diff --git a/tools/testing/selftests/alsa/utimer-test.c b/tools/testing/selftests/alsa/utimer-test.c
 new file mode 100644
-index 000000000000..b45a9d29f4c4
+index 000000000000..38de90e507fe
 --- /dev/null
 +++ b/tools/testing/selftests/alsa/utimer-test.c
-@@ -0,0 +1,130 @@
+@@ -0,0 +1,133 @@
 +// SPDX-License-Identifier: GPL-2.0
 +/*
 + * This test covers the functionality of userspace-driven ALSA timers. Such timers
@@ -182,6 +182,9 @@ index 000000000000..b45a9d29f4c4
 +
 +FIXTURE_SETUP(timer_f) {
 +	int timer_dev_fd;
++
++	if (geteuid())
++		SKIP(return, "This test needs root to run!");
 +
 +	self->utimer_info = calloc(1, sizeof(*self->utimer_info));
 +	ASSERT_NE(NULL, self->utimer_info);
