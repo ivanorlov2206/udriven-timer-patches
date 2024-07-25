@@ -1,6 +1,6 @@
-From fac0be1885a577cf683b5155ad81ab9b9a843de7 Mon Sep 17 00:00:00 2001
+From 92cc0e40b737ec948319cf1d3b728f4bd32a8752 Mon Sep 17 00:00:00 2001
 From: Ivan Orlov <ivan.orlov0322@gmail.com>
-Date: Thu, 25 Jul 2024 23:09:50 +0100
+Date: Thu, 25 Jul 2024 23:37:03 +0100
 Subject: [PATCH 0/4] Introduce userspace-driven ALSA timers
 
 There are multiple possible timer sources which could be useful for
@@ -52,15 +52,15 @@ Ivan Orlov (4):
   selftests: ALSA: Cover userspace-driven timers with test
 
  Documentation/sound/index.rst               |   1 +
- Documentation/sound/utimers.rst             | 118 ++++++++++
+ Documentation/sound/utimers.rst             | 120 +++++++++++
  include/uapi/sound/asound.h                 |  17 ++
  sound/core/Kconfig                          |  11 +
- sound/core/timer.c                          | 229 ++++++++++++++++++++
+ sound/core/timer.c                          | 226 ++++++++++++++++++++
  sound/drivers/aloop.c                       |   2 +
  tools/testing/selftests/alsa/Makefile       |   2 +-
  tools/testing/selftests/alsa/global-timer.c |  87 ++++++++
  tools/testing/selftests/alsa/utimer-test.c  | 133 ++++++++++++
- 9 files changed, 599 insertions(+), 1 deletion(-)
+ 9 files changed, 598 insertions(+), 1 deletion(-)
  create mode 100644 Documentation/sound/utimers.rst
  create mode 100644 tools/testing/selftests/alsa/global-timer.c
  create mode 100644 tools/testing/selftests/alsa/utimer-test.c

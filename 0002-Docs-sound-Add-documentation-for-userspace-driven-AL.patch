@@ -1,4 +1,4 @@
-From 9cb4b565c298478a9c3eda7c0c64b0f3ba48b27a Mon Sep 17 00:00:00 2001
+From eb19e6781b68afb52229394cebe048914ef81d39 Mon Sep 17 00:00:00 2001
 From: Ivan Orlov <ivan.orlov0322@gmail.com>
 Date: Wed, 24 Jul 2024 23:05:17 +0100
 Subject: [PATCH 2/4] Docs/sound: Add documentation for userspace-driven ALSA
@@ -16,8 +16,8 @@ Suggested-by: Axel Holzinger <aholzinger@gmx.de>
 Signed-off-by: Ivan Orlov <ivan.orlov0322@gmail.com>
 ---
  Documentation/sound/index.rst   |   1 +
- Documentation/sound/utimers.rst | 118 ++++++++++++++++++++++++++++++++
- 2 files changed, 119 insertions(+)
+ Documentation/sound/utimers.rst | 120 ++++++++++++++++++++++++++++++++
+ 2 files changed, 121 insertions(+)
  create mode 100644 Documentation/sound/utimers.rst
 
 diff --git a/Documentation/sound/index.rst b/Documentation/sound/index.rst
@@ -34,10 +34,10 @@ index 7e67e12730d3..c437f2a4bc85 100644
  
 diff --git a/Documentation/sound/utimers.rst b/Documentation/sound/utimers.rst
 new file mode 100644
-index 000000000000..6bef035041b5
+index 000000000000..f70f9100aa24
 --- /dev/null
 +++ b/Documentation/sound/utimers.rst
-@@ -0,0 +1,118 @@
+@@ -0,0 +1,120 @@
 +.. SPDX-License-Identifier: GPL-2.0
 +
 +=======================
@@ -85,7 +85,9 @@ index 000000000000..6bef035041b5
 +size emulated by the virtual timer respectively. ``id`` field gets
 +overwritten by the ioctl, and the identifier you get in this field after
 +the call can be used as a timer subdevice number when passing the timer
-+to ``snd-aloop`` kernel module or other userspace applications.
++to ``snd-aloop`` kernel module or other userspace applications. There
++could be up to 128 userspace-driven timers in the system at one moment
++of time, thus the id value ranges from 0 to 127.
 +
 +Besides from overwriting the ``snd_utimer_info`` struct, ioctl returns
 +a timer file descriptor, which can be used to trigger the timer. This
