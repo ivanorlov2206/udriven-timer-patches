@@ -1,6 +1,6 @@
-From ab6d79f866b91e61ac0c4042abb43db1a57d3f4e Mon Sep 17 00:00:00 2001
+From 57663ead1126a77df5ed6768a4cf7acaea548a54 Mon Sep 17 00:00:00 2001
 From: Ivan Orlov <ivan.orlov0322@gmail.com>
-Date: Thu, 25 Jul 2024 20:14:52 +0100
+Date: Thu, 25 Jul 2024 23:01:06 +0100
 Subject: [PATCH 0/4] Introduce userspace-driven ALSA timers
 
 There are multiple possible timer sources which could be useful for

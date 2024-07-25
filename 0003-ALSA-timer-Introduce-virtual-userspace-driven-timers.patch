@@ -1,4 +1,4 @@
-From d52a331ea9504e9a4b2271923eb2f1a285fa7308 Mon Sep 17 00:00:00 2001
+From 8e3ccdc354a5ff4929df4fc058dd6207ac57b3d5 Mon Sep 17 00:00:00 2001
 From: Ivan Orlov <ivan.orlov0322@gmail.com>
 Date: Fri, 12 Jul 2024 22:52:42 +0100
 Subject: [PATCH 3/4] ALSA: timer: Introduce virtual userspace-driven timers
@@ -26,6 +26,7 @@ simplification of the userspace API. 'start', 'stop', 'open' and 'close'
 callbacks for the userspace-driven timers are empty since we don't
 really do any hardware initialization here.
 
+Suggested-by: Axel Holzinger <aholzinger@gmx.de>
 Signed-off-by: Ivan Orlov <ivan.orlov0322@gmail.com>
 ---
  include/uapi/sound/asound.h |  17 +++

@@ -1,4 +1,4 @@
-From 14e2242c559b2df0a4ca3180a2e52c055ea41175 Mon Sep 17 00:00:00 2001
+From f7fc5691d0a535f68f6ffe43bea40d015183eaac Mon Sep 17 00:00:00 2001
 From: Ivan Orlov <ivan.orlov0322@gmail.com>
 Date: Wed, 24 Jul 2024 23:05:17 +0100
 Subject: [PATCH 2/4] Docs/sound: Add documentation for userspace-driven ALSA
@@ -12,6 +12,7 @@ API introduced in this patch series. The documentation contains:
 - Example of how the timers can be created and triggered
 - How the timers can be used as a timer sources for snd-aloop module
 
+Suggested-by: Axel Holzinger <aholzinger@gmx.de>
 Signed-off-by: Ivan Orlov <ivan.orlov0322@gmail.com>
 ---
  Documentation/sound/index.rst   |   1 +
