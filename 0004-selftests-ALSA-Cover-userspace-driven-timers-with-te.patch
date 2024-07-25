@@ -1,4 +1,4 @@
-From 8fbae5f396c1343a16e5b00dfc30a0128a3caab0 Mon Sep 17 00:00:00 2001
+From 5b671b43693da489a3519466cd8d15f0ba32008f Mon Sep 17 00:00:00 2001
 From: Ivan Orlov <ivan.orlov0322@gmail.com>
 Date: Tue, 23 Jul 2024 11:23:12 +0100
 Subject: [PATCH 4/4] selftests: ALSA: Cover userspace-driven timers with test
@@ -12,6 +12,13 @@ test:
 from step 1.
 3. Asynchronously triggers the timer multiple times with some interval
 4. Compares the amount of caught ticks with the amount of trigger calls.
+
+Since we can't include <alsa/asoundlib.h> and <sound/asound.h> in one
+file due to overlapping declarations, I have to split the test into two
+applications: one of them counts the amount of timer ticks in the
+defined time period, and another one is the actual test which creates
+the timer, triggers it periodically and starts the first app to count
+the amount of ticks in a separate thread.
 
 Besides from testing the functionality itself, the test represents a
 sample application showing userspace-driven ALSA timers API.
