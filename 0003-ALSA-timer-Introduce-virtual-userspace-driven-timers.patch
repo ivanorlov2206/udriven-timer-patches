@@ -1,4 +1,4 @@
-From 8e3ccdc354a5ff4929df4fc058dd6207ac57b3d5 Mon Sep 17 00:00:00 2001
+From 8a9cf344381c3a76c856e3bd25af3f634673aec5 Mon Sep 17 00:00:00 2001
 From: Ivan Orlov <ivan.orlov0322@gmail.com>
 Date: Fri, 12 Jul 2024 22:52:42 +0100
 Subject: [PATCH 3/4] ALSA: timer: Introduce virtual userspace-driven timers

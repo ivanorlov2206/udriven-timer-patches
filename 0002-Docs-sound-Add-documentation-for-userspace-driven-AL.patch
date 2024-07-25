@@ -1,4 +1,4 @@
-From f7fc5691d0a535f68f6ffe43bea40d015183eaac Mon Sep 17 00:00:00 2001
+From 9cb4b565c298478a9c3eda7c0c64b0f3ba48b27a Mon Sep 17 00:00:00 2001
 From: Ivan Orlov <ivan.orlov0322@gmail.com>
 Date: Wed, 24 Jul 2024 23:05:17 +0100
 Subject: [PATCH 2/4] Docs/sound: Add documentation for userspace-driven ALSA

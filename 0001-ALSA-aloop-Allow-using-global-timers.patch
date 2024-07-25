@@ -1,9 +1,9 @@
-From de14d24ed2785823fe51b8342fb1e36e5cc5a0c5 Mon Sep 17 00:00:00 2001
+From 46b087e6afee39d2ad8779e19536b51bd664b060 Mon Sep 17 00:00:00 2001
 From: Ivan Orlov <ivan.orlov0322@gmail.com>
 Date: Fri, 12 Jul 2024 22:50:08 +0100
 Subject: [PATCH 1/4] ALSA: aloop: Allow using global timers
 
-Allow using global timers as a timer source when device is equal to -1
+Allow using global timers as a timer source when card id is equal to -1
 in the timer_source parameter.
 
 Signed-off-by: Ivan Orlov <ivan.orlov0322@gmail.com>
