@@ -1,8 +1,18 @@
-From eb19e6781b68afb52229394cebe048914ef81d39 Mon Sep 17 00:00:00 2001
+From 6cbc0d5092e17213297c70244916b783f24b50c7 Mon Sep 17 00:00:00 2001
 From: Ivan Orlov <ivan.orlov0322@gmail.com>
 Date: Wed, 24 Jul 2024 23:05:17 +0100
-Subject: [PATCH 2/4] Docs/sound: Add documentation for userspace-driven ALSA
- timers
+Subject: [PATCH v2 2/4] Docs/sound: Add documentation for userspace-driven
+ ALSA timers
+To: perex@perex.cz,
+    tiwai@suse.com,
+    corbet@lwn.net,
+    broonie@kernel.org,
+    shuah@kernel.org
+Cc: linux-kselftest@vger.kernel.org,
+    linux-doc@vger.kernel.org,
+    linux-sound@vger.kernel.org,
+    linux-kernel@vger.kernel.org,
+    christophe.jaillet@wanadoo.fr
 
 Add the documentation which describes the new userspace-driven timers
 API introduced in this patch series. The documentation contains:
@@ -15,6 +25,9 @@ API introduced in this patch series. The documentation contains:
 Suggested-by: Axel Holzinger <aholzinger@gmx.de>
 Signed-off-by: Ivan Orlov <ivan.orlov0322@gmail.com>
 ---
+V1 -> V2:
+- No changes
+
  Documentation/sound/index.rst   |   1 +
  Documentation/sound/utimers.rst | 120 ++++++++++++++++++++++++++++++++
  2 files changed, 121 insertions(+)
@@ -34,7 +47,7 @@ index 7e67e12730d3..c437f2a4bc85 100644
  
 diff --git a/Documentation/sound/utimers.rst b/Documentation/sound/utimers.rst
 new file mode 100644
-index 000000000000..f70f9100aa24
+index 000000000000..0bd875ea9986
 --- /dev/null
 +++ b/Documentation/sound/utimers.rst
 @@ -0,0 +1,120 @@
@@ -99,7 +112,7 @@ index 000000000000..f70f9100aa24
 +
 +::
 +
-+    static const struct snd_utimer_info utimer_info {
++    static const struct snd_utimer_info utimer_info = {
 +        .frame_rate = 8000,
 +        .period_size = 4410,
 +        .id = -1,

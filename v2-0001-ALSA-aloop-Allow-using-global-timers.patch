@@ -1,13 +1,26 @@
 From 46b087e6afee39d2ad8779e19536b51bd664b060 Mon Sep 17 00:00:00 2001
 From: Ivan Orlov <ivan.orlov0322@gmail.com>
 Date: Fri, 12 Jul 2024 22:50:08 +0100
-Subject: [PATCH 1/4] ALSA: aloop: Allow using global timers
+Subject: [PATCH v2 1/4] ALSA: aloop: Allow using global timers
+To: perex@perex.cz,
+    tiwai@suse.com,
+    corbet@lwn.net,
+    broonie@kernel.org,
+    shuah@kernel.org
+Cc: linux-kselftest@vger.kernel.org,
+    linux-doc@vger.kernel.org,
+    linux-sound@vger.kernel.org,
+    linux-kernel@vger.kernel.org,
+    christophe.jaillet@wanadoo.fr
 
 Allow using global timers as a timer source when card id is equal to -1
 in the timer_source parameter.
 
 Signed-off-by: Ivan Orlov <ivan.orlov0322@gmail.com>
 ---
+V1 -> V2:
+- No changes
+
  sound/drivers/aloop.c | 2 ++
  1 file changed, 2 insertions(+)
 

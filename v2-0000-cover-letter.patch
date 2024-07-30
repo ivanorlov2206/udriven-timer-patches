@@ -1,7 +1,17 @@
-From 92cc0e40b737ec948319cf1d3b728f4bd32a8752 Mon Sep 17 00:00:00 2001
+From 54753e77c07d43838d12f509d72494e30dea8b25 Mon Sep 17 00:00:00 2001
 From: Ivan Orlov <ivan.orlov0322@gmail.com>
-Date: Thu, 25 Jul 2024 23:37:03 +0100
-Subject: [PATCH 0/4] Introduce userspace-driven ALSA timers
+Date: Mon, 29 Jul 2024 09:52:56 +0100
+Subject: [PATCH v2 0/4] Introduce userspace-driven ALSA timers
+To: perex@perex.cz,
+    tiwai@suse.com,
+    corbet@lwn.net,
+    broonie@kernel.org,
+    shuah@kernel.org
+Cc: linux-kselftest@vger.kernel.org,
+    linux-doc@vger.kernel.org,
+    linux-sound@vger.kernel.org,
+    linux-kernel@vger.kernel.org,
+    christophe.jaillet@wanadoo.fr
 
 There are multiple possible timer sources which could be useful for
 the sound stream synchronization: hrtimers, hardware clocks (e.g. PTP),
@@ -11,8 +21,7 @@ kernel-space driver which exports an ALSA timer through the
 snd_timer interface.
 
 However, it is not really convenient for application developers, who may
-want to define their custom timer sources in order to synchronize
-substreams of snd-aloop.
+want to define their custom timer sources for audio synchronization.
 
 For instance, we could have a network application which receives frames
 and sends them to snd-aloop pcm device, and another application
@@ -23,7 +32,8 @@ on a local system elapses. Since all of the devices are purely virtual
 it won't introduce any glitches and will help the application developers
 to avoid using sample-rate conversion.
 
-This patch series introduces userspace-driven ALSA timers. The timer can
+This patch series introduces userspace-driven ALSA timers: virtual
+timers which are created and controlled from userspace. The timer can
 be created from the userspace using the new ioctl SNDRV_TIMER_IOCTL_CREATE.
 After creating a timer, it becomes available for use system-wide, so it
 can be passed to snd-aloop as a timer source (timer_source parameter
@@ -45,6 +55,10 @@ This patch series also updates the snd-aloop module so the global timers
 can be used as a timer_source for it (it allows using userspace-driven
 timers as timer source).
 
+V2 of this patch series fixes some problems found by Christophe Jaillet
+<christophe.jaillet@wanadoo.fr>. Please, find the patch-specific
+changelog in the following patches.
+
 Ivan Orlov (4):
   ALSA: aloop: Allow using global timers
   Docs/sound: Add documentation for userspace-driven ALSA timers
@@ -54,13 +68,13 @@ Ivan Orlov (4):
  Documentation/sound/index.rst               |   1 +
  Documentation/sound/utimers.rst             | 120 +++++++++++
  include/uapi/sound/asound.h                 |  17 ++
- sound/core/Kconfig                          |  11 +
- sound/core/timer.c                          | 226 ++++++++++++++++++++
+ sound/core/Kconfig                          |  10 +
+ sound/core/timer.c                          | 213 ++++++++++++++++++++
  sound/drivers/aloop.c                       |   2 +
  tools/testing/selftests/alsa/Makefile       |   2 +-
  tools/testing/selftests/alsa/global-timer.c |  87 ++++++++
- tools/testing/selftests/alsa/utimer-test.c  | 133 ++++++++++++
- 9 files changed, 598 insertions(+), 1 deletion(-)
+ tools/testing/selftests/alsa/utimer-test.c  | 137 +++++++++++++
+ 9 files changed, 588 insertions(+), 1 deletion(-)
  create mode 100644 Documentation/sound/utimers.rst
  create mode 100644 tools/testing/selftests/alsa/global-timer.c
  create mode 100644 tools/testing/selftests/alsa/utimer-test.c
